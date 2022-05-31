@@ -37,7 +37,7 @@ module "security_group_ecs" {
 }
 
 module "ecs_cluster" {
-  source                      = "git::https://github.com/inflearn/terraform-aws-ecs-cluster.git?ref=v1.0.0"
+  source                      = "git::https://github.com/inflearn/terraform-aws-ecs-cluster.git?ref=v1.0.0-inflab"
   name                        = "example-inflab-ecs-task-definition-complete-ec2"
   type                        = "EC2"
   subnets                     = module.vpc.public_subnets

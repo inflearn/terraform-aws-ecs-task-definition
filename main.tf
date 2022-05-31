@@ -68,8 +68,8 @@ resource "aws_ecs_task_definition" "this" {
   for c in each.value.container_definitions : {
     name              = c.name
     image             = c.image
-    cpu               = c.cpu
-    memoryReservation = c.memoryReservation
+    cpu               = try(c.cpu, null)
+    memoryReservation = try(c.memoryReservation, null)
     essential         = try(c.essential, true)
     dependsOn         = try(c.dependsOn, null)
     portMappings      = try(c.portMappings, null)
