@@ -75,7 +75,7 @@ module "ecs_task_definition" {
         {
           name               = "container"
           log_retention_days = 7
-          image              = ""
+          image              = "ubuntu:latest"
           cpu                = 1024
           memoryReservation  = 1024
           essential          = true

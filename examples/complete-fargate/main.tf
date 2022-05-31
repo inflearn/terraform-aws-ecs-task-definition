@@ -70,7 +70,7 @@ module "ecs_task_definition" {
         {
           name               = "container"
           log_retention_days = 7
-          image              = ""
+          image              = "ubuntu:latest"
           essential          = true
           dependsOn          = null
           portMappings       = null
