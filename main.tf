@@ -5,7 +5,7 @@ data "aws_iam_role" "task_execution" {
 resource "aws_cloudwatch_log_group" "this" {
   for_each = merge([
   for t in var.task_definitions : {
-  for c in t.container_definitions : "${var.cluster_name}${try(t.name, null) == null ? "" : "/${t.name}"}${try(c.name, null) == null ? "" : "/${c.name}"}" => {
+  for c in t.container_definitions : "${each.value.name}/${c.name}" => {
     log_retention_days = try(c.log_retention_days, 7)
   }
   }
@@ -17,7 +17,7 @@ resource "aws_cloudwatch_log_group" "this" {
 
 resource "aws_ecs_task_definition" "this" {
   for_each                 = {for i, t in var.task_definitions : i => t}
-  family                   = "${var.cluster_name}${try(each.value.name, null) == null ? "" : "-${each.value.name}"}"
+  family                   = each.value.name
   requires_compatibilities = try(each.value.requires_compatibilities, ["EC2"])
   execution_role_arn       = data.aws_iam_role.task_execution.arn
   task_role_arn            = try(each.value.task_role_arn, null)
@@ -85,7 +85,7 @@ resource "aws_ecs_task_definition" "this" {
       "logDriver" : "awslogs",
       "options" : {
         "awslogs-region" : var.region,
-        "awslogs-group" : aws_cloudwatch_log_group.this["${var.cluster_name}${try(each.value.name, null) == null ? "" : "/${each.value.name}"}${try(c.name, null) == null ? "" : "/${c.name}"}"].name,
+        "awslogs-group" : aws_cloudwatch_log_group.this["${each.value.name}/${c.name}"].name,
         "awslogs-stream-prefix" : "ecs"
       }
     }
