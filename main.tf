@@ -81,6 +81,7 @@ resource "aws_ecs_task_definition" "this" {
     workingDirectory  = try(c.workingDirectory, null)
     secrets           = try(c.secrets, null)
     mountPoints       = try(c.mountPoints, null)
+    dockerLabels      = try(c.dockerLabels, null)
     logConfiguration : {
       "logDriver" : "awslogs",
       "options" : {
