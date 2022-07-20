@@ -43,20 +43,20 @@ resource "aws_ecs_task_definition" "this" {
       host_path = try(volume.value.host_path, null)
 
       dynamic "efs_volume_configuration" {
-        for_each = try(volume.value.efs_volume_configuration, [])
+        for_each = try(volume.value.efs_volume_configuration, null) != null ? [1] : []
 
         content {
-          file_system_id          = efs_volume_configuration.value.file_system_id
-          root_directory          = try(efs_volume_configuration.value.root_directory, null)
-          transit_encryption      = try(efs_volume_configuration.value.transit_encryption, null)
-          transit_encryption_port = try(efs_volume_configuration.value.transit_encryption_port, null)
+          file_system_id          = volume.value.efs_volume_configuration.file_system_id
+          root_directory          = try(volume.value.efs_volume_configuration.root_directory, null)
+          transit_encryption      = try(volume.value.efs_volume_configuration.transit_encryption, null)
+          transit_encryption_port = try(volume.value.efs_volume_configuration.transit_encryption_port, null)
 
           dynamic "authorization_config" {
-            for_each = try(efs_volume_configuration.value.authorization_config, [])
+            for_each = try(volume.value.efs_volume_configuration.authorization_config, null) != null ? [1] : []
 
             content {
-              iam             = try(authorization_config.value.iam_auth, null)
-              access_point_id = try(authorization_config.value.access_point_id, null)
+              iam             = try(volume.value.efs_volume_configuration.authorization_config.iam_auth, null)
+              access_point_id = try(volume.value.efs_volume_configuration.authorization_config.access_point_id, null)
             }
           }
         }
