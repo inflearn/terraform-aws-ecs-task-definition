@@ -6,7 +6,7 @@ resource "aws_cloudwatch_log_group" "this" {
   for_each = merge([
   for t in var.task_definitions : {
   for c in t.container_definitions : "${t.name}/${c.name}" => {
-    log_retention_days = try(c.log_retention_days, 7)
+    log_retention_days = try(c.log_retention_days, 90)
   }
   }
   ]...)
