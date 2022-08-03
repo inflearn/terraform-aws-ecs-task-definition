@@ -2,13 +2,17 @@ data "aws_iam_role" "task_execution" {
   name = "ecsTaskExecutionRole"
 }
 
+data "aws_iam_role" "task_role" {
+  name = "ecsTaskRole"
+}
+
 resource "aws_cloudwatch_log_group" "this" {
   for_each = merge([
-  for t in var.task_definitions : {
-  for c in t.container_definitions : "${t.name}/${c.name}" => {
-    log_retention_days = try(c.log_retention_days, 90)
-  }
-  }
+    for t in var.task_definitions : {
+      for c in t.container_definitions : "${t.name}/${c.name}" => {
+        log_retention_days = try(c.log_retention_days, 90)
+      }
+    }
   ]...)
   name              = "/ecs/${each.key}"
   retention_in_days = each.value.log_retention_days
@@ -16,11 +20,11 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 resource "aws_ecs_task_definition" "this" {
-  for_each                 = {for i, t in var.task_definitions : i => t}
+  for_each                 = { for i, t in var.task_definitions : i => t }
   family                   = each.value.name
   requires_compatibilities = try(each.value.requires_compatibilities, ["EC2"])
   execution_role_arn       = data.aws_iam_role.task_execution.arn
-  task_role_arn            = try(each.value.task_role_arn, null)
+  task_role_arn            = try(each.value.task_role_arn, data.aws_iam_role.task_role.arn)
   network_mode             = try(each.value.network_mode, "bridge")
   cpu                      = try(each.value.cpu, 256)
   memory                   = try(each.value.memory, 512)
@@ -65,31 +69,31 @@ resource "aws_ecs_task_definition" "this" {
   }
 
   container_definitions = jsonencode([
-  for c in each.value.container_definitions : {
-    name              = c.name
-    image             = c.image
-    cpu               = try(c.cpu, 256)
-    memoryReservation = try(c.memoryReservation, 512)
-    essential         = try(c.essential, true)
-    dependsOn         = try(c.dependsOn, null)
-    portMappings      = try(c.portMappings, null)
-    healthCheck       = try(c.healthCheck, null)
-    linuxParameters   = try(c.linuxParameters, null)
-    environment       = try(c.environment, null)
-    entryPoint        = try(c.entryPoint, null)
-    command           = try(c.command, null)
-    workingDirectory  = try(c.workingDirectory, null)
-    secrets           = try(c.secrets, null)
-    mountPoints       = try(c.mountPoints, null)
-    dockerLabels      = try(c.dockerLabels, null)
-    logConfiguration : {
-      "logDriver" : "awslogs",
-      "options" : {
-        "awslogs-region" : var.region,
-        "awslogs-group" : aws_cloudwatch_log_group.this["${each.value.name}/${c.name}"].name,
-        "awslogs-stream-prefix" : "ecs"
+    for c in each.value.container_definitions : {
+      name              = c.name
+      image             = c.image
+      cpu               = try(c.cpu, 256)
+      memoryReservation = try(c.memoryReservation, 512)
+      essential         = try(c.essential, true)
+      dependsOn         = try(c.dependsOn, null)
+      portMappings      = try(c.portMappings, null)
+      healthCheck       = try(c.healthCheck, null)
+      linuxParameters   = try(c.linuxParameters, null)
+      environment       = try(c.environment, null)
+      entryPoint        = try(c.entryPoint, null)
+      command           = try(c.command, null)
+      workingDirectory  = try(c.workingDirectory, null)
+      secrets           = try(c.secrets, null)
+      mountPoints       = try(c.mountPoints, null)
+      dockerLabels      = try(c.dockerLabels, null)
+      logConfiguration : {
+        "logDriver" : "awslogs",
+        "options" : {
+          "awslogs-region" : var.region,
+          "awslogs-group" : aws_cloudwatch_log_group.this["${each.value.name}/${c.name}"].name,
+          "awslogs-stream-prefix" : "ecs"
+        }
       }
     }
-  }
   ])
 }
