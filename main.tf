@@ -73,6 +73,7 @@ resource "aws_ecs_task_definition" "this" {
       name              = c.name
       image             = c.image
       cpu               = try(c.cpu, 256)
+      memory            = try(c.memory, 512)
       memoryReservation = try(c.memoryReservation, 512)
       essential         = try(c.essential, true)
       dependsOn         = try(c.dependsOn, null)
