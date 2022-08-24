@@ -26,8 +26,8 @@ resource "aws_ecs_task_definition" "this" {
   execution_role_arn       = data.aws_iam_role.task_execution.arn
   task_role_arn            = try(each.value.task_role_arn, data.aws_iam_role.task_role.arn)
   network_mode             = try(each.value.network_mode, "bridge")
-  cpu                      = try(each.value.cpu, 256)
-  memory                   = try(each.value.memory, 512)
+  cpu                      = try(each.value.cpu, null)
+  memory                   = try(each.value.memory, null)
   tags                     = var.tags
 
   dynamic "runtime_platform" {
@@ -72,9 +72,9 @@ resource "aws_ecs_task_definition" "this" {
   for c in each.value.container_definitions : {
     name              = c.name
     image             = c.image
-    cpu               = try(c.cpu, 256)
+    cpu               = try(c.cpu, null)
     memory            = try(c.memory, null)
-    memoryReservation = try(c.memoryReservation, 512)
+    memoryReservation = try(c.memoryReservation, null)
     essential         = try(c.essential, true)
     dependsOn         = try(c.dependsOn, null)
     portMappings      = try(c.portMappings, null)
